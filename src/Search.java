@@ -5,15 +5,15 @@ public class Search {
 
      public static void main(String[] args){
 
-        Location p = new Location(7,8);
-        System.out.println(p);
-        System.out.println(p.row());
-        System.out.println(p.column());
-        Location q = new Location(7,8);
+        // Location p = new Location(7,8);
+        // System.out.println(p);
+        // System.out.println(p.row());
+        // System.out.println(p.column());
+        // Location q = new Location(7,8);
 
-        Set<Location> visitedLocations = new HashSet<>();
-        visitedLocations.add(p);
-        System.out.println(visitedLocations.contains(q));
+        // Set<Location> visitedLocations = new HashSet<>();
+        // visitedLocations.add(p);
+        // System.out.println(visitedLocations.contains(q));
 
         // Set<int[]> visited = new HashSet<>();
         // int[] a = new int[]{5,8};
@@ -25,8 +25,23 @@ public class Search {
         // System.out.println(visited.contains(a));
         // System.out.println(visited.contains(b));
         // System.out.println(visited.contains(c));
+
+        char[][] grid = {
+            {'o', 'o', 'o', 'o', 'c', 'w', 'c', 'o'},
+            {'w', 'o', 'o', 'w', 'w', 'c', 'w', 'o'},
+            {'o', 'o', 'o', 'o', 'R', 'w', 'o', 'o'},
+            {'o', 'o', 'w', 'w', 'w', 'o', 'o', 'o'},
+            {'o', 'o', 'o', 'o', 'c', 'o', 'o', 'o'}
+            };
+
+            System.out.println(nearestCheese(grid));
+            
      }
-    
+    /** ToDo 
+     * 
+     *  
+    change comment to relfect that we re returning path instead of final location now.
+    */
     
      /**
      * Finds the location of the nearest reachable cheese from the rat's position.
@@ -57,26 +72,41 @@ public class Search {
      * @throws CrowdedMazeException if there is more than one rat in the maze
      * @throws HungryRatException if there is no reachable cheese
      */
-     public static int[] nearestCheese(char[][] maze) throws EscapedRatException, CrowdedMazeException, HungryRatException {
+     public static List<Location> nearestCheese(char[][] maze) throws EscapedRatException, CrowdedMazeException, HungryRatException {
         Location start = ratLocation(maze);
         
-        Set<Location> visited = new HashSet<>();
+        Set<Location> hasBeenQeued = new HashSet<>();
         Queue<Location> q = new ArrayDeque<>();
+        Map<Location, Location> prevs = new HashMap<>();
+        
 
         q.add(start);
 
         while(!q.isEmpty()) {
             Location current = q.remove();
-            if(visited.contains(current)) continue;
-            visited.add(current);
+            if(hasBeenQeued.contains(current)) continue;
+            hasBeenQeued.add(current);
 
             if(maze[current.row()][current.column()] == 'c') {
-                return new int[]{current.row(), current.column()};
+                List<Location> path = new LinkedList<>();
+                Location step = current;
+                while(step != null ){
+                    path.addFirst(step);
+                    step = prevs.get(step);
+                }
+                return path;
+                // return path
             }
 
             List<Location> neighbors = possibleMoves(maze, current);
             for(Location neighbor : neighbors) {
-                q.add(neighbor);
+
+                if(!hasBeenQeued.contains(neighbor)) {
+                    hasBeenQeued.add(current);
+                    prevs.put(neighbor, current);
+                    q.add(neighbor);
+                    }
+                
             }
         }
 
@@ -91,6 +121,7 @@ public class Search {
             {0,1}    // RIGHT
         };
 
+
         List<Location> validMoves = new ArrayList<>();
         for(int[] move : moves) {
             Location possibleMove = new Location(current.row() + move[0], 
@@ -101,6 +132,10 @@ public class Search {
                 validMoves.add(possibleMove);
             }
         }
+
+
+        
+
         return validMoves;
     }
 
